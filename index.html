@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ballers Booking</title>
+  <style>
+    :root{
+      --bg:#0b0f14; /* near-black */
+      --panel:#121824; /* dark panel */
+      --accent:#1e5eea; /* Ballers blue */
+      --accent-2:#0ea5e9; /* cyan tint */
+      --text:#eaf2ff; /* soft white */
+      --muted:#93a4c2; /* muted text */
+      --ok:#22c55e;
+      --warn:#f59e0b;
+      --danger:#ef4444;
+      --grid:#1b2333;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:var(--bg); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;
+      display:flex; flex-direction:column;
+    }
+    header{
+      display:flex; align-items:center; gap:12px; padding:12px 16px; background:linear-gradient(180deg,#0c1220, #0b0f14);
+      border-bottom:1px solid #0f1626; position:sticky; top:0; z-index:5;
+    }
+    header img{ height:44px; width:auto; filter:drop-shadow(0 2px 4px rgba(0,0,0,.35)); }
+    header h1{ font-size:20px; margin:0; letter-spacing:.3px; }
+    .sub{ color:var(--muted); font-size:12px; }
+
+    .toolbar{
+      display:grid; gap:10px; padding:12px; background:var(--panel); border-bottom:1px solid #0f1626;
+      grid-template-columns: repeat(12, 1fr);
+    }
+    .toolbar > *{ min-width:0 }
+    .toolbar .wide{ grid-column: span 12 }
+    .toolbar .md{ grid-column: span 6 }
+    .toolbar .sm{ grid-column: span 3 }
+    @media(min-width:720px){
+      .toolbar{ grid-template-columns: repeat(12, 1fr) }
+      .toolbar .wide{ grid-column: span 5 }
+      .toolbar .md{ grid-column: span 3 }
+      .toolbar .sm{ grid-column: span 2 }
+    }
+    input, select, button{
+      background:#0e1524; border:1px solid #1a2540; color:var(--text);
+      padding:10px 12px; border-radius:10px; outline:none; width:100%;
+    }
+    input[type="date"], input[type="time"], select{ font-variant-numeric: tabular-nums; }
+    button{ background:linear-gradient(180deg,var(--accent),#184ec1); border:none; font-weight:700; cursor:pointer }
+    button.secondary{ background:#0e1524; border:1px solid #1f2a44 }
+
+    main{ display:grid; gap:16px; padding:16px; max-width:1200px; width:100%; margin:0 auto; }
+    .columns{ display:grid; gap:16px }
+    @media(min-width:880px){ .columns{ grid-template-columns: 1.2fr .8fr } }
+
+    .panel{ background:var(--panel); border:1px solid #0f1626; border-radius:16px; overflow:hidden }
+    .panel h2{ margin:0; padding:14px 16px; font-size:16px; border-bottom:1px solid #0f1626; background:#0d1523 }
+
+    
+    .list{ display:flex; flex-direction:column; }
+    .empty{ color:var(--muted); padding:18px; text-align:center }
+    .booking{ display:grid; grid-template-columns: 1fr auto; gap:8px; align-items:center; padding:12px 16px; border-bottom:1px solid #0f1626 }
+    .booking:last-child{ border-bottom:none }
+    .tag{ font-size:12px; color:#c9d6ff; background:#0e1a31; border:1px solid #1d2a4c; padding:2px 8px; border-radius:999px }
+    .times{ font-variant-numeric:tabular-nums; color:#cfe2ff }
+    .name{ font-weight:700 }
+    .table-badge{ font-weight:700; font-size:14px; background:#072143; color:#b6d4ff; border:1px solid #143463; border-radius:8px; padding:4px 10px; margin-left:4px }
+    .action-row{ display:flex; gap:8px }
+    .del{ background:transparent; border:1px solid #2c3652; border-radius:10px; padding:8px 10px; color:#ffb4b4; cursor:pointer }
+
+    
+    .grid{ overflow:auto; }
+    .grid table{ width:100%; border-collapse:separate; border-spacing:0 }
+    .grid th, .grid td{ border-bottom:1px solid var(--grid); padding:8px 10px; text-align:left; font-size:13px }
+    .grid thead th{ position:sticky; top:0; background:#0d1523; z-index:1 }
+    .slot{ background:#0e1524; border:1px solid #1a2540; border-radius:8px; padding:6px 8px; display:inline-block; margin:2px 4px }
+    .slot .s{ font-variant-numeric:tabular-nums }
+
+    
+    .form{ display:grid; grid-template-columns: repeat(12, 1fr); gap:12px; padding:12px }
+    .form .col-12{ grid-column: span 12 }
+    .form .col-6{ grid-column: span 6 }
+    .form .col-4{ grid-column: span 4 }
+    .hint{ color:var(--muted); font-size:12px; padding: 0 12px 12px }
+    .ok{ color:var(--ok) }
+    .err{ color:var(--danger) }
+    .footer{ text-align:center; color:var(--muted); font-size:12px; padding:12px }
+  </style>
+</head>
+<body>
+  <header>
+    
+    <img src="https://8ballers-wakefield.com/assets/logo-COhdSDeb.png" alt="Ballers Logo" onerror="this.style.display='none'"/>
+    <div>
+      <h1>Ballers – Table Booking</h1>
+      <div class="sub">Realtime 24‑hour booking • 13 UK pool tables</div>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <div class="md">
+      <label class="sub">Date</label>
+      <input id="date" type="date">
+    </div>
+    <div class="md">
+      <label class="sub">Table</label>
+      <select id="table">
+        <option value="1">Table 1</option>
+        <option value="2">Table 2</option>
+        <option value="3">Table 3</option>
+        <option value="4">Table 4</option>
+        <option value="5">Table 5</option>
+        <option value="6">Table 6</option>
+        <option value="7">Table 7</option>
+        <option value="8">Table 8</option>
+        <option value="9">Table 9</option>
+        <option value="10">Table 10</option>
+        <option value="11">Table 11</option>
+        <option value="12">Table 12</option>
+        <option value="13">Table 13</option>
+      </select>
+    </div>
+    <div class="wide">
+      <label class="sub">Quick Add (name • start • end)</label>
+      <div style="display:grid; grid-template-columns: 1.5fr 1fr 1fr auto; gap:8px">
+        <input id="name" placeholder="Player or booking name" autocomplete="off">
+        <input id="start" type="time" step="1800" value="19:00">
+        <input id="end" type="time" step="1800" value="21:00">
+        <button id="add">Book</button>
+      </div>
+    </div>
+    <div class="sm">
+      <label class="sub">View</label>
+      <select id="view">
+        <option value="list">Table List</option>
+        <option value="grid">All Tables Grid</option>
+      </select>
+    </div>
+  </div>
+
+  <main>
+    <div class="columns">
+      <section class="panel" id="schedule-panel">
+        <h2 id="title">Schedule</h2>
+        <div id="schedule" class="list"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Settings</h2>
+        <div class="form">
+          <div class="col-12">
+            <label class="sub">Your venue code (choose any short word). Everyone must use the same code to see the same bookings.</label>
+            <input id="venue" placeholder="e.g. ballers-hull" />
+            <div class="hint">Used as your shared room in the database. Keep it simple (letters, numbers, dashes).</div>
+          </div>
+          <div class="col-6">
+            <label class="sub">Delete PIN (optional)</label>
+            <input id="adminPin" type="password" placeholder="Set a PIN to allow deletion">
+          </div>
+          <div class="col-6">
+            <label class="sub">Your name (saved locally)</label>
+            <input id="me" placeholder="Staff name (for audit)">
+          </div>
+          <div class="col-12">
+            <button id="saveSettings" class="secondary">Save Settings</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="panel" id="grid-panel" style="display:none">
+      <h2>All Tables – Today</h2>
+      <div class="grid" id="grid"></div>
+    </section>
+
+    
+  </main>
+
+
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-database-compat.js"></script>
+
+  <script>
+// === Ballers Booking — works offline, syncs via Firebase when configured ===
+
+// 1) PASTE YOUR REAL Realtime Database URL below (from Firebase Console)
+const firebaseConfig = {
+  apiKey: "AIzaSyBZGe8s3iPBXVu2LhlrzC6je-4OWQo8v9A",
+  authDomain: "ballers-booking-system.firebaseapp.com",
+  databaseURL: "https://ballers-booking-system-default-rtdb.europe-west1.firebasedatabase.app", // <— this must be exact
+  projectId: "ballers-booking-system",
+  storageBucket: "ballers-booking-system.firebasestorage.app",
+  messagingSenderId: "239199651135",
+  appId: "1:239199651135:web:83d23c6d6570f0f7c6ff8a"
+};
+
+// 2) Initialise Firebase compat (NO ES MODULE IMPORTS)
+let db = null;
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+} catch(e) {
+  console.warn("Firebase not initialised (offline mode):", e);
+}
+
+// ---------- OFFLINE support (also persists in localStorage) ----------
+const MEMKEY = 'ballers.localdb';
+function _getRoot(){ try{ return JSON.parse(localStorage.getItem(MEMKEY)||'{}'); }catch(_){ return {}; } }
+function _saveRoot(obj){ try{ localStorage.setItem(MEMKEY, JSON.stringify(obj)); }catch(_){} }
+function readLocal(path){
+  const parts = path.split('/'); let cur=_getRoot();
+  for(const p of parts){ if(!cur) return []; cur = cur[p]; }
+  return Array.isArray(cur)?cur: (cur? Object.values(cur): []);
+}
+function writeLocal(path, arr){
+  const parts = path.split('/'); const last = parts.pop();
+  let root=_getRoot(); let cur=root;
+  for(const p of parts){ cur[p]=cur[p]||{}; cur=cur[p]; }
+  cur[last]=arr; _saveRoot(root);
+}
+
+// ---------- DOM ----------
+const dateEl=document.getElementById('date');
+const tableEl=document.getElementById('table');
+const nameEl=document.getElementById('name');
+const startEl=document.getElementById('start');
+const endEl=document.getElementById('end');
+const addBtn=document.getElementById('add');
+const scheduleEl=document.getElementById('schedule');
+const viewEl=document.getElementById('view');
+const gridEl=document.getElementById('grid');
+const gridPanel=document.getElementById('grid-panel');
+const titleEl=document.getElementById('title');
+const venueEl=document.getElementById('venue');
+const meEl=document.getElementById('me');
+const adminPinEl=document.getElementById('adminPin');
+const saveSettingsBtn=document.getElementById('saveSettings');
+
+const today=new Date(); if(!dateEl.value) dateEl.value=today.toISOString().slice(0,10);
+const pad=n=>String(n).padStart(2,'0');
+const timeToMin=t=>{ if(!t||!t.includes(':'))return NaN; const [h,m]=t.split(':').map(Number); return h*60+m; };
+const minToTime=n=>`${pad(Math.floor(n/60))}:${pad(n%60)}`;
+
+const LS_SETTINGS='ballers.settings';
+const defaults={venue:'ballers-hull', me:'staff', pin:''};
+try{ const s=JSON.parse(localStorage.getItem(LS_SETTINGS)||'{}');
+  venueEl.value=s.venue||defaults.venue; meEl.value=s.me||defaults.me; adminPinEl.value=s.pin||defaults.pin;
+}catch(_){}
+saveSettingsBtn?.addEventListener('click', ()=>{
+  const s={venue:(venueEl.value||defaults.venue).toLowerCase(), me:meEl.value||defaults.me, pin:adminPinEl.value||defaults.pin};
+  try{ localStorage.setItem(LS_SETTINGS, JSON.stringify(s)); }catch(_){}
+  attachListener();
+});
+
+// paths
+const venue=()=> (venueEl.value||defaults.venue).toLowerCase();
+const path = (d,t)=> `venues/${venue()}/bookings/${d}/t${t}`;
+
+// renderers
+function renderList(arr){
+  scheduleEl.innerHTML='';
+  if(!arr.length){ scheduleEl.innerHTML='<div class="empty">No bookings yet</div>'; return; }
+  arr.slice().sort((a,b)=>a.start-b.start).forEach(b=>{
+    const row=document.createElement('div'); row.className='booking';
+    row.innerHTML=`<div><div class=name>${b.name}</div><div class=times>${minToTime(b.start)} – ${minToTime(b.end)}</div></div>`;
+    scheduleEl.appendChild(row);
+  });
+}
+async function renderGrid(){
+  if(viewEl.value!=='grid') return;
+  gridPanel.style.display='block';
+  const d=dateEl.value, v=venue();
+  let html='<table><thead><tr><th>Table</th><th>Bookings</th></tr></thead><tbody>';
+  if(!db){
+    for(let t=1;t<=13;t++){
+      const arr=readLocal(`venues/${v}/bookings/${d}/t${t}`).slice().sort((a,b)=>a.start-b.start);
+      const chips=arr.map(b=>`<span class='slot'><span class='s'>${minToTime(b.start)}–${minToTime(b.end)}</span> • ${b.name}</span>`).join('');
+      html+=`<tr><th>Table ${t}</th><td>${chips||'<span class=sub>No bookings</span>'}</td></tr>`;
+    }
+  }else{
+    for(let t=1;t<=13;t++){
+      const snap=await db.ref(`venues/${v}/bookings/${d}/t${t}`).get();
+      const arr=Object.values(snap.val()||{}).sort((a,b)=>a.start-b.start);
+      const chips=arr.map(b=>`<span class='slot'><span class='s'>${minToTime(b.start)}–${minToTime(b.end)}</span> • ${b.name}</span>`).join('');
+      html+=`<tr><th>Table ${t}</th><td>${chips||'<span class=sub>No bookings</span>'}</td></tr>`;
+    }
+  }
+  html+='</tbody></table>'; gridEl.innerHTML=html;
+}
+
+// live listener
+let off=null;
+function attachListener(){
+  const d=dateEl.value, t=tableEl.value; titleEl.textContent=`Table ${t} – Schedule – ${d}`;
+  const p=path(d,t);
+  if(!db){
+    renderList(readLocal(p)); renderGrid(); return;
+  }
+  if(off){ off(); off=null; }
+  const ref=db.ref(p);
+  const cb=snap=>{ const arr=Object.values(snap.val()||{}).sort((a,b)=>a.start-b.start); renderList(arr); renderGrid(); };
+  ref.on('value', cb); off=()=>ref.off('value', cb);
+}
+
+// add booking
+addBtn.onclick=async ()=>{
+  const n=(nameEl.value||'').trim(); if(!n){ alert('Enter name'); return; }
+  const s=timeToMin(startEl.value), e=timeToMin(endEl.value);
+  if(!isFinite(s)||!isFinite(e)){ alert('Set start and end'); return; }
+  if(e<=s){ alert('End must be after start'); return; }
+  if(e-s>360){ alert('Max booking length is 6 hours'); return; }
+  const p=path(dateEl.value, tableEl.value);
+
+  if(!db){
+    const arr=readLocal(p).slice();
+    for(const b of arr){ if(Math.max(s,b.start)<Math.min(e,b.end)){ alert('Time clash'); return; } }
+    arr.push({id:`mem_${Date.now()}`, name:n, start:s, end:e, by:(meEl.value||'staff'), ts:Date.now()});
+    writeLocal(p, arr); nameEl.value=''; attachListener(); return;
+  }
+
+  const ref=db.ref(p);
+  const snap=await ref.get(); const data=snap.val()||{};
+  for(const b of Object.values(data)){ if(Math.max(s,b.start)<Math.min(e,b.end)){ alert('Time clash'); return; } }
+  const id=ref.push().key;
+  await ref.child(id).set({id, name:n, start:s, end:e, by:(meEl.value||'staff'), ts:Date.now()});
+  nameEl.value='';
+};
+
+// events
+dateEl.addEventListener('change', attachListener);
+tableEl.addEventListener('change', attachListener);
+viewEl.addEventListener('change', ()=>{
+  const listMode=viewEl.value==='list';
+  document.getElementById('schedule-panel').style.display=listMode?'block':'none';
+  if(!listMode) renderGrid(); else attachListener();
+});
+
+// boot
+attachListener();
+</script>
+
+</body>
+</html>
